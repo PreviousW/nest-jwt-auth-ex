@@ -66,4 +66,19 @@ export class AuthController {
   async protected(@Request() req) {
     return { user: req.user };
   }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'refresh auth token.' })
+  @ApiBody({
+    schema: {
+      properties: {
+        token: { type: 'string' }
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Successfully refreshed.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  async refresh(@Body() refreshToken: { token: string }) {
+    return this.authService.refresh(refreshToken.token);
+  }
 }
