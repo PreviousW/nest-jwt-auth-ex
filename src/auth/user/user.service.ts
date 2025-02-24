@@ -29,8 +29,9 @@ export class UserService {
     return await this.db.collection('users').findOne({ nickname }) == undefined
   } 
 
-  async create(user: User): Promise<User> {
+  async create(user: User) {
     await this.db.collection('users').insertOne(user);
-    return user;
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 }

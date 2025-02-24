@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Request, UseGuards, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Request, UseGuards, Get, Query, Headers, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local/local-auth.guard';
 import { User } from './user/user.schema';
@@ -68,17 +68,16 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'refresh auth token.' })
-  @ApiBody({
-    schema: {
-      properties: {
-        token: { type: 'string' }
-      },
-    },
-  })
   @ApiResponse({ status: 200, description: 'Successfully refreshed.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  async refresh(@Body() refreshToken: { token: string }) {
-    return this.authService.refresh(refreshToken.token);
+  async refresh(@Headers('authorization') authorization: string, @Headers('x-refresh-token') refreshToken: string) {
+    if (!authorization || !refreshToken) {
+      throw new UnauthorizedException('Tokens are required');
+    }
+
+    const accessToken = authorization.replace('Bearer ', '');
+    return this.authService.refresh(accessToken, refreshToken);
   }
 }
